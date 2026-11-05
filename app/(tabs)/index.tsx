@@ -1,31 +1,36 @@
-import { StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { CoverPhoto } from '@/components/home/CoverPhoto';
+import { DDayCard } from '@/components/home/DDayCard';
+import { TodoChecklist } from '@/components/home/TodoChecklist';
+import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { COVER_PHOTO_URI, couple, initialTodos } from '@/constants/sample-data';
+import { palette, spacing } from '@/constants/theme';
+import { formatKoreanDate } from '@/lib/date';
 
-export default function TabOneScreen() {
+export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <SafeAreaView edges={['top']} style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScreenHeader eyebrow={formatKoreanDate(new Date())} title="우리의 소소한 일상" />
+        <CoverPhoto uri={COVER_PHOTO_URI} tagline={couple.tagline} title={couple.names} />
+        <DDayCard startDate={couple.startDate} anniversary={couple.anniversary} />
+        <TodoChecklist initialItems={initialTodos} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: palette.bg,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  content: {
+    paddingTop: 12,
+    paddingHorizontal: spacing.screen,
+    paddingBottom: spacing.screen,
+    gap: spacing.section,
   },
 });

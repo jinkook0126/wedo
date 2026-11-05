@@ -1,0 +1,111 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-11-05T05:57:02.761Z",
+  "activeFeatures": [
+    "constants",
+    "wedo",
+    "ui"
+  ],
+  "primaryFeature": "constants",
+  "features": {
+    "constants": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-11-05T05:56:27.062Z",
+        "lastUpdated": "2026-11-05T05:56:38.157Z"
+      },
+      "lastFile": "D:\\jinqook\\wedo\\constants\\sample-data.ts"
+    },
+    "wedo": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-11-05T05:56:32.028Z",
+        "lastUpdated": "2026-11-05T05:57:02.761Z"
+      },
+      "lastFile": "D:\\jinqook\\wedo\\components\\AppIcon.tsx"
+    },
+    "ui": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-11-05T05:56:41.492Z",
+        "lastUpdated": "2026-11-05T05:56:46.662Z"
+      },
+      "lastFile": "D:\\jinqook\\wedo\\components\\ui\\Pill.tsx"
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-11-05T05:52:56.194Z",
+    "onboardingCompleted": false,
+    "lastActivity": "2026-11-05T05:57:02.761Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-11-05T05:56:27.062Z",
+      "feature": "constants",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:56:32.028Z",
+      "feature": "wedo",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:56:38.157Z",
+      "feature": "constants",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:56:41.492Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:56:44.349Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:56:46.662Z",
+      "feature": "ui",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:56:54.653Z",
+      "feature": "wedo",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-11-05T05:57:02.761Z",
+      "feature": "wedo",
+      "phase": "do",
+      "action": "updated"
+    }
+  ]
+}
