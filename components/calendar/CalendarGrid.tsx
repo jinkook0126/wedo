@@ -1,8 +1,8 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { CalendarDay } from '@/constants/sample-data';
 import { palette, radius, shadow, toneColors, typography } from '@/constants/theme';
-import { buildMonthWeeks, isSameDay, toDateKey, weekdayLabels } from '@/lib/date';
+import { buildMonthWeeks, formatKoreanDate, isSameDay, toDateKey, weekdayLabels } from '@/lib/date';
 
 const CELL_HEIGHT = 108;
 const MAX_LABELS = 2;
@@ -11,10 +11,19 @@ type Props = {
   year: number;
   month: number;
   days: Record<string, CalendarDay>;
+  selectedDate: Date;
+  onSelectDate: (date: Date) => void;
   today?: Date;
 };
 
-export function CalendarGrid({ year, month, days, today = new Date() }: Props) {
+export function CalendarGrid({
+  year,
+  month,
+  days,
+  selectedDate,
+  onSelectDate,
+  today = new Date(),
+}: Props) {
   const weeks = buildMonthWeeks(year, month);
 
   return (
@@ -35,7 +44,9 @@ export function CalendarGrid({ year, month, days, today = new Date() }: Props) {
               date={date}
               inMonth={date.getMonth() === month}
               isToday={isSameDay(date, today)}
+              isSelected={isSameDay(date, selectedDate)}
               day={days[toDateKey(date)]}
+              onPress={() => onSelectDate(date)}
             />
           ))}
         </View>
@@ -48,30 +59,41 @@ type DayCellProps = {
   date: Date;
   inMonth: boolean;
   isToday: boolean;
+  isSelected: boolean;
   day?: CalendarDay;
+  onPress: () => void;
 };
 
-function DayCell({ date, inMonth, isToday, day }: DayCellProps) {
+function DayCell({ date, inMonth, isToday, isSelected, day, onPress }: DayCellProps) {
   const events = inMonth ? (day?.events ?? []) : [];
   const photo = inMonth ? day?.photo : undefined;
   const hidden = events.length - MAX_LABELS;
+  const dateColor = isToday
+    ? '#FFFFFF'
+    : isSelected
+      ? palette.accent
+      : weekdayColor(date.getDay());
 
   return (
-    <View style={[styles.cell, !inMonth && styles.outside]}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={formatKoreanDate(date)}
+      accessibilityState={{ selected: isSelected }}
+      style={({ pressed }) => [
+        styles.cell,
+        !inMonth && styles.outside,
+        isSelected && styles.selected,
+        pressed && !isSelected && styles.pressed,
+      ]}>
       <View style={[styles.dateBadge, isToday && styles.todayBadge]}>
-        <Text
-          style={[
-            styles.date,
-            { color: isToday ? '#FFFFFF' : weekdayColor(date.getDay()) },
-          ]}>
-          {date.getDate()}
-        </Text>
+        <Text style={[styles.date, { color: dateColor }]}>{date.getDate()}</Text>
       </View>
 
       <View style={styles.labels}>
         {events.slice(0, MAX_LABELS).map((event) => (
           <View
-            key={event.title}
+            key={event.id}
             style={[styles.label, { backgroundColor: toneColors[event.tone].bg }]}>
             <Text
               numberOfLines={1}
@@ -84,7 +106,7 @@ function DayCell({ date, inMonth, isToday, day }: DayCellProps) {
       </View>
 
       {photo && <Image source={{ uri: photo }} style={styles.thumb} accessibilityIgnoresInvertColors />}
-    </View>
+    </Pressable>
   );
 }
 
@@ -128,6 +150,17 @@ const styles = StyleSheet.create({
   },
   outside: {
     opacity: 0.3,
+  },
+  selected: {
+    borderRadius: 10,
+    backgroundColor: palette.bg,
+    outlineWidth: 1.5,
+    outlineColor: palette.accent,
+    outlineOffset: -1.5,
+  },
+  pressed: {
+    borderRadius: 10,
+    backgroundColor: palette.bg,
   },
   dateBadge: {
     width: 22,
