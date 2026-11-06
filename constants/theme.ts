@@ -6,6 +6,7 @@ export const palette = {
   ink: '#293236',
   muted: '#939998',
   line: '#EFEFEA',
+  track: '#ECECE6',
   accent: '#E78372',
   soft: '#FCEDE8',
   green: '#618B79',

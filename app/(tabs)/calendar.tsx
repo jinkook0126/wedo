@@ -2,25 +2,87 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AddEventSheet, type NewEvent } from '@/components/calendar/AddEventSheet';
 import { CalendarGrid } from '@/components/calendar/CalendarGrid';
+import { DaySchedule } from '@/components/calendar/DaySchedule';
 import { AppIcon } from '@/components/ui/AppIcon';
+import { FAB_SIZE, FloatingAddButton } from '@/components/ui/FloatingAddButton';
 import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { calendarDays } from '@/constants/sample-data';
-import { palette, radius, shadow, spacing, typography } from '@/constants/theme';
+import { calendarDays, type CalendarEvent } from '@/constants/sample-data';
+import { palette, radius, shadow, spacing, typography, type Tone } from '@/constants/theme';
+import { eachDay, isSameDay, toDateKey, toTimeKey } from '@/lib/date';
 
-function startOfCurrentMonth() {
+const EVENT_TONES: Tone[] = ['accent', 'green', 'blue'];
+
+function sortByTime(events: CalendarEvent[]) {
+  return [...events].sort((a, b) => (a.time ?? '').localeCompare(b.time ?? ''));
+}
+
+function startOfToday() {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1);
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function isSameMonth(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 }
 
 export default function CalendarScreen() {
-  const [cursor, setCursor] = useState(startOfCurrentMonth);
-  const today = startOfCurrentMonth();
-  const isCurrentMonth =
-    cursor.getFullYear() === today.getFullYear() && cursor.getMonth() === today.getMonth();
+  const today = startOfToday();
+  const [cursor, setCursor] = useState(() => startOfMonth(today));
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [days, setDays] = useState(calendarDays);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const isShowingToday = isSameMonth(cursor, today) && isSameDay(selectedDate, today);
 
-  const shiftMonth = (delta: number) =>
-    setCursor((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
+  const focusDate = (date: Date) => {
+    setSelectedDate(date);
+    if (!isSameMonth(date, cursor)) setCursor(startOfMonth(date));
+  };
+
+  const selectDate = (date: Date) => {
+    if (isSameDay(date, selectedDate)) setSheetOpen(true);
+    else focusDate(date);
+  };
+
+  const addEvent = ({ title, memo, start, end, allDay }: NewEvent) => {
+    const dates = eachDay(start, end);
+    const startKey = toDateKey(start);
+    setDays((prev) => {
+      const event: CalendarEvent = {
+        id: `${Date.now()}`,
+        title,
+        memo,
+        time: allDay ? undefined : toTimeKey(start),
+        endTime: allDay ? undefined : toTimeKey(end),
+        span: dates.length > 1 ? { start: startKey, end: toDateKey(end) } : undefined,
+        tone: EVENT_TONES[(prev[startKey]?.events?.length ?? 0) % EVENT_TONES.length],
+      };
+      const next = { ...prev };
+      for (const date of dates) {
+        const key = toDateKey(date);
+        next[key] = { ...next[key], events: sortByTime([...(next[key]?.events ?? []), event]) };
+      }
+      return next;
+    });
+    setSheetOpen(false);
+    focusDate(start);
+  };
+
+  const shiftMonth = (delta: number) => {
+    const next = new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1);
+    setCursor(next);
+    setSelectedDate(isSameMonth(next, today) ? today : next);
+  };
+
+  const goToToday = () => {
+    setCursor(startOfMonth(today));
+    setSelectedDate(today);
+  };
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
@@ -31,18 +93,18 @@ export default function CalendarScreen() {
           right={
             <View style={styles.nav}>
               <Pressable
-                onPress={() => setCursor(startOfCurrentMonth())}
-                disabled={isCurrentMonth}
+                onPress={goToToday}
+                disabled={isShowingToday}
                 accessibilityRole="button"
                 accessibilityLabel="오늘로 이동"
-                accessibilityState={{ disabled: isCurrentMonth }}
+                accessibilityState={{ disabled: isShowingToday }}
                 hitSlop={6}
                 style={({ pressed }) => [
                   styles.todayButton,
-                  isCurrentMonth && styles.todayButtonIdle,
+                  isShowingToday && styles.todayButtonIdle,
                   pressed && { opacity: 0.6 },
                 ]}>
-                <Text style={[styles.todayLabel, isCurrentMonth && styles.todayLabelIdle]}>
+                <Text style={[styles.todayLabel, isShowingToday && styles.todayLabelIdle]}>
                   오늘
                 </Text>
               </Pressable>
@@ -51,8 +113,25 @@ export default function CalendarScreen() {
             </View>
           }
         />
-        <CalendarGrid year={cursor.getFullYear()} month={cursor.getMonth()} days={calendarDays} />
+        <CalendarGrid
+          year={cursor.getFullYear()}
+          month={cursor.getMonth()}
+          days={days}
+          selectedDate={selectedDate}
+          onSelectDate={selectDate}
+          today={today}
+        />
+        <DaySchedule date={selectedDate} day={days[toDateKey(selectedDate)]} />
       </ScrollView>
+
+      <FloatingAddButton onPress={() => setSheetOpen(true)} accessibilityLabel="일정 추가" />
+
+      <AddEventSheet
+        visible={sheetOpen}
+        initialDate={selectedDate}
+        onClose={() => setSheetOpen(false)}
+        onSave={addEvent}
+      />
     </SafeAreaView>
   );
 }
@@ -84,7 +163,7 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: 12,
     paddingHorizontal: spacing.screen,
-    paddingBottom: spacing.screen,
+    paddingBottom: FAB_SIZE + spacing.screen * 2,
     gap: spacing.section,
   },
   nav: {

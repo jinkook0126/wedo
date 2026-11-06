@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AppIcon } from '@/components/ui/AppIcon';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Pill } from '@/components/ui/Pill';
 import type { TodoItem } from '@/constants/sample-data';
 import { palette, radius, shadow, typography } from '@/constants/theme';
@@ -37,9 +37,7 @@ export function TodoChecklist({ initialItems }: Props) {
               index > 0 && styles.divider,
               pressed && styles.pressed,
             ]}>
-            <View style={[styles.checkbox, item.done && styles.checkboxDone]}>
-              {item.done && <AppIcon name="check" color="#FFFFFF" size={14} />}
-            </View>
+            <Checkbox checked={item.done} tone="green" />
             <View style={styles.details}>
               <Text style={[typography.body, item.done && styles.doneText]}>{item.title}</Text>
               <Text
@@ -85,19 +83,6 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
-  },
-  checkbox: {
-    width: 21,
-    height: 21,
-    borderRadius: radius.sm,
-    borderWidth: 1.5,
-    borderColor: palette.line,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxDone: {
-    backgroundColor: palette.green,
-    borderColor: palette.green,
   },
   details: {
     flex: 1,
