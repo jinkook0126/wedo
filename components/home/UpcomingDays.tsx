@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { UpcomingDay } from '@/constants/sample-data';
@@ -33,7 +33,9 @@ export function UpcomingDays({ days, today = new Date() }: Props) {
   const upcoming = upcomingFrom(days, today);
   const pinned = upcoming.find((day) => day.pinned);
   const featured = upcoming.length >= 3 ? (pinned ?? upcoming[0]) : undefined;
-  const rest = featured ? upcoming.filter((day) => day.id !== featured.id) : upcoming;
+  const below = featured
+    ? upcoming.filter((day) => day.id !== featured.id).slice(0, 2)
+    : [];
 
   return (
     <View style={styles.section}>
@@ -53,31 +55,26 @@ export function UpcomingDays({ days, today = new Date() }: Props) {
       {upcoming.length === 0 && <EmptyState />}
       {upcoming.length === 1 && <HeroCard day={upcoming[0]} />}
       {upcoming.length === 2 && (
-        <View style={styles.pairRow}>
-          {upcoming.map((day) => (
-            <PairCard key={day.id} day={day} />
-          ))}
-        </View>
+        <>
+          <HeroCard day={upcoming[0]} kicker={upcoming[0].pinned ? undefined : '가장 가까운 날'} />
+          <ListCard day={upcoming[1]} />
+        </>
       )}
       {featured && (
         <>
           <HeroCard day={featured} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.miniScroll}
-            contentContainerStyle={styles.miniRow}>
-            {rest.map((day) => (
+          <View style={styles.miniRow}>
+            {below.map((day) => (
               <MiniCard key={day.id} day={day} />
             ))}
-          </ScrollView>
+          </View>
         </>
       )}
     </View>
   );
 }
 
-function HeroCard({ day }: { day: Day }) {
+function HeroCard({ day, kicker }: { day: Day; kicker?: string }) {
   const { fg, bg } = toneColors[day.tone];
   return (
     <View
@@ -85,7 +82,11 @@ function HeroCard({ day }: { day: Day }) {
       accessible
       accessibilityLabel={cardLabel(day)}>
       <View style={styles.heroText}>
-        {day.pinned && <AppIcon name="pin" color={fg} size={14} />}
+        {kicker ? (
+          <Text style={[styles.kicker, { color: fg }]}>{kicker}</Text>
+        ) : (
+          day.pinned && <AppIcon name="pin" color={fg} size={14} />
+        )}
         <Text style={styles.heroTitle} numberOfLines={1}>
           {day.title}
         </Text>
@@ -96,19 +97,22 @@ function HeroCard({ day }: { day: Day }) {
   );
 }
 
-function PairCard({ day }: { day: Day }) {
+function ListCard({ day }: { day: Day }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View
-      style={[styles.pairCard, { backgroundColor: bg }]}
-      accessible
-      accessibilityLabel={cardLabel(day)}>
-      {day.pinned && <AppIcon name="pin" color={fg} size={14} />}
-      <Text style={styles.pairTitle} numberOfLines={1}>
-        {day.title}
-      </Text>
-      <Text style={styles.date}>{formatMonthDay(day.date)}</Text>
-      <Text style={[styles.pairCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
+    <View style={styles.listCard} accessible accessibilityLabel={cardLabel(day)}>
+      <View style={styles.listText}>
+        <View style={styles.listTitle}>
+          {day.pinned && <AppIcon name="pin" color={fg} size={12} />}
+          <Text style={styles.listLabel} numberOfLines={1}>
+            {day.title}
+          </Text>
+        </View>
+        <Text style={styles.date}>{formatMonthDay(day.date)}</Text>
+      </View>
+      <View style={[styles.listBadge, { backgroundColor: bg }]}>
+        <Text style={[styles.listBadgeLabel, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
+      </View>
     </View>
   );
 }
@@ -118,16 +122,15 @@ function MiniCard({ day }: { day: Day }) {
   return (
     <View style={[styles.mini, { backgroundColor: bg }]} accessible accessibilityLabel={cardLabel(day)}>
       <View style={styles.miniTitle}>
-        {day.pinned ? (
-          <AppIcon name="pin" color={fg} size={12} />
-        ) : (
-          <View style={[styles.dot, { backgroundColor: fg }]} />
-        )}
-        <Text style={typography.body} numberOfLines={1}>
+        {day.pinned && <AppIcon name="pin" color={fg} size={12} />}
+        <Text style={styles.miniLabel} numberOfLines={1}>
           {day.title}
         </Text>
       </View>
-      <Text style={[styles.miniCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
+      <View style={styles.miniFooter}>
+        <Text style={[styles.miniCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
+        <Text style={styles.miniDate}>{formatMonthDay(day.date)}</Text>
+      </View>
     </View>
   );
 }
@@ -186,6 +189,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  kicker: {
+    ...typography.caption,
+    fontWeight: '700',
+  },
   heroTitle: {
     ...typography.heading,
     fontSize: 16,
@@ -201,36 +208,49 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: palette.muted,
   },
-  pairRow: {
+  listCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: palette.line,
+    backgroundColor: palette.surface,
+  },
+  listText: {
+    flex: 1,
+    gap: 2,
+  },
+  listTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  listLabel: {
+    ...typography.body,
+    flexShrink: 1,
+    fontWeight: '700',
+  },
+  listBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  listBadgeLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+    letterSpacing: -0.2,
+  },
+  miniRow: {
     flexDirection: 'row',
     gap: 10,
   },
-  pairCard: {
-    flex: 1,
-    gap: 4,
-    minHeight: 112,
-    padding: 14,
-    borderRadius: radius.lg,
-  },
-  pairTitle: {
-    ...typography.body,
-    fontWeight: '700',
-  },
-  pairCount: {
-    marginTop: 'auto',
-    fontSize: 22,
-    fontWeight: '800',
-    lineHeight: 28,
-    letterSpacing: -0.4,
-  },
-  miniScroll: {
-    flexGrow: 0,
-  },
-  miniRow: {
-    gap: 8,
-  },
   mini: {
-    width: 132,
+    flex: 1,
     gap: 6,
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -241,16 +261,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: radius.pill,
+  miniLabel: {
+    ...typography.body,
+    flexShrink: 1,
+  },
+  miniFooter: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   miniCount: {
     fontSize: 16,
     fontWeight: '800',
     lineHeight: 22,
     letterSpacing: -0.3,
+  },
+  miniDate: {
+    ...typography.caption,
+    flexShrink: 1,
+    color: palette.muted,
+    textAlign: 'right',
   },
   empty: {
     alignItems: 'center',
