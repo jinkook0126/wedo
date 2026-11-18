@@ -19,6 +19,7 @@ const ICONS = {
   chevronRight: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
   plus: { ios: 'plus', android: 'add', web: 'add' },
   close: { ios: 'xmark', android: 'close', web: 'close' },
+  pin: { ios: 'pin.fill', android: 'push_pin', web: 'push_pin' },
 } satisfies Record<string, SymbolViewProps['name']>;
 
 export type AppIconName = keyof typeof ICONS;

@@ -9,6 +9,21 @@ export const couple = {
   anniversary: { label: '우리의 기념일', date: new Date(2026, 10, 20) },
 };
 
+export type UpcomingDay = {
+  id: string;
+  title: string;
+  date: Date;
+  tone: Tone;
+  /** When several days are coming up, this one is the large card. */
+  pinned?: boolean;
+};
+
+export const upcomingDays: UpcomingDay[] = [
+  { id: 'd1', title: couple.anniversary.label, date: couple.anniversary.date, tone: 'accent' },
+  { id: 'd2', title: '크리스마스', date: new Date(2026, 11, 25), tone: 'accent', pinned: true },
+  { id: 'd3', title: '새해 첫날', date: new Date(2027, 0, 1), tone: 'blue' },
+];
+
 export type TodoItem = {
   id: string;
   title: string;
