@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Pill } from '@/components/ui/Pill';
 import type { TodoItem } from '@/constants/sample-data';
-import { palette, radius, shadow, typography } from '@/constants/theme';
+import { palette, radius, shadow } from '@/constants/theme';
 
 type Props = {
   initialItems: TodoItem[];
@@ -20,7 +20,7 @@ export function TodoChecklist({ initialItems }: Props) {
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
-        <Text style={typography.heading}>함께하는 작은 일들</Text>
+        <Text style={styles.sectionTitle}>함께하는 작은 일들</Text>
         <Pill label={`${items.length}개 중 ${doneCount}개 완료`} tone="green" />
       </View>
 
@@ -39,7 +39,7 @@ export function TodoChecklist({ initialItems }: Props) {
             ]}>
             <Checkbox checked={item.done} tone="green" />
             <View style={styles.details}>
-              <Text style={[typography.body, item.done && styles.doneText]}>{item.title}</Text>
+              <Text style={[styles.title, item.done && styles.doneText]}>{item.title}</Text>
               <Text
                 style={[
                   styles.assignee,
@@ -63,6 +63,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+    letterSpacing: -0.3,
+    color: palette.ink,
   },
   card: {
     paddingVertical: 4,
@@ -88,10 +95,20 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 5,
   },
+  title: {
+    fontSize: 15,
+    fontWeight: '500',
+    lineHeight: 20,
+    letterSpacing: -0.3,
+    color: palette.ink,
+  },
   doneText: {
     color: palette.muted,
   },
   assignee: {
-    ...typography.micro,
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 15,
+    letterSpacing: -0.22,
   },
 });

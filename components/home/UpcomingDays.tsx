@@ -40,7 +40,7 @@ export function UpcomingDays({ days, today = new Date() }: Props) {
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
-        <Text style={typography.heading}>다가오는 날</Text>
+        <Text style={styles.sectionTitle}>다가오는 날</Text>
         <Pressable
           onPress={openCalendar}
           accessibilityRole="button"
@@ -164,6 +164,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+    letterSpacing: -0.3,
+    color: palette.ink,
+  },
   seeAll: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,18 +201,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   heroTitle: {
-    ...typography.heading,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+    letterSpacing: -0.3,
+    color: palette.ink,
   },
   heroCount: {
-    fontSize: 28,
-    fontWeight: '800',
-    lineHeight: 34,
-    letterSpacing: -0.6,
+    fontSize: 32,
+    fontWeight: '700',
+    lineHeight: 39,
+    letterSpacing: -0.64,
   },
   date: {
-    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '400',
+    lineHeight: 15,
+    letterSpacing: -0.22,
     color: palette.muted,
   },
   listCard: {
@@ -230,9 +242,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   listLabel: {
-    ...typography.body,
     flexShrink: 1,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 16,
+    letterSpacing: -0.24,
+    color: palette.ink,
   },
   listBadge: {
     paddingHorizontal: 10,
@@ -240,10 +255,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   listBadgeLabel: {
-    fontSize: 13,
+    fontSize: 20,
     fontWeight: '700',
-    lineHeight: 18,
-    letterSpacing: -0.2,
+    lineHeight: 24,
+    letterSpacing: -0.4,
   },
   miniRow: {
     flexDirection: 'row',
@@ -262,8 +277,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   miniLabel: {
-    ...typography.body,
     flexShrink: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 16,
+    letterSpacing: -0.24,
+    color: palette.ink,
   },
   miniFooter: {
     flexDirection: 'row',
@@ -272,14 +291,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   miniCount: {
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 22,
-    letterSpacing: -0.3,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 24,
+    letterSpacing: -0.4,
   },
   miniDate: {
-    ...typography.caption,
     flexShrink: 1,
+    fontSize: 11,
+    fontWeight: '400',
+    lineHeight: 15,
+    letterSpacing: -0.22,
     color: palette.muted,
     textAlign: 'right',
   },
