@@ -1,50 +1,33 @@
-import { ImageBackground, StyleSheet, Text, View } from 'react-native';
+import { ImageBackground, StyleSheet, View } from "react-native";
 
-import { radius, typography } from '@/constants/theme';
+const COVER_HEIGHT = 240;
+const TOP_SHADOW_HEIGHT = 90;
 
 type Props = {
   uri: string;
-  tagline: string;
-  title: string;
 };
 
-export function CoverPhoto({ uri, tagline, title }: Props) {
+export function CoverPhoto({ uri }: Props) {
   return (
     <ImageBackground
       source={{ uri }}
       style={styles.photo}
-      imageStyle={styles.image}
       accessibilityRole="image"
-      accessibilityLabel={`${title} 대문 사진`}>
-      <View style={styles.gradient} />
-      <Text style={styles.tagline}>{tagline}</Text>
-      <Text style={styles.title}>{title}</Text>
+      accessibilityLabel="대문 사진"
+    >
+      <View pointerEvents="none" style={styles.topShadow} />
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   photo: {
-    height: 248,
-    padding: 20,
-    justifyContent: 'flex-end',
-    borderRadius: radius.xl,
-    overflow: 'hidden',
+    height: COVER_HEIGHT,
+    justifyContent: "flex-start",
   },
-  image: {
-    borderRadius: radius.xl,
-  },
-  gradient: {
-    ...StyleSheet.absoluteFill,
-    backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(13,28,25,0.65) 100%)',
-  },
-  tagline: {
-    ...typography.micro,
-    color: 'rgba(255,255,255,0.88)',
-    letterSpacing: 1.3,
-  },
-  title: {
-    ...typography.title,
-    color: '#FFFFFF',
+  topShadow: {
+    height: TOP_SHADOW_HEIGHT,
+    backgroundImage:
+      "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 100%)",
   },
 });

@@ -17,6 +17,8 @@ const ICONS = {
   check: { ios: 'checkmark', android: 'check', web: 'check' },
   chevronLeft: { ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' },
   chevronRight: { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' },
+  chevronDown: { ios: 'chevron.down', android: 'expand_more', web: 'expand_more' },
+  chevronUp: { ios: 'chevron.up', android: 'expand_less', web: 'expand_less' },
   plus: { ios: 'plus', android: 'add', web: 'add' },
   close: { ios: 'xmark', android: 'close', web: 'close' },
   pin: { ios: 'pin.fill', android: 'push_pin', web: 'push_pin' },

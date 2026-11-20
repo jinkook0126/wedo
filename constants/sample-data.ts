@@ -1,12 +1,13 @@
-import type { Tone } from './theme';
+import type { Tone } from "./theme";
 
-export const COVER_PHOTO_URI = 'https://framerusercontent.com/images/CCoboAdc6y3Cv1T8CjixRefc.png';
+export const COVER_PHOTO_URI =
+  "https://framerusercontent.com/images/CCoboAdc6y3Cv1T8CjixRefc.png";
 
 export const couple = {
-  names: '지현과 진국',
-  tagline: '언제나 너와 함께',
+  names: "지현과 진국",
+  tagline: "언제나 너와 함께",
   startDate: new Date(2023, 5, 21),
-  anniversary: { label: '우리의 기념일', date: new Date(2026, 10, 20) },
+  anniversary: { label: "우리의 기념일", date: new Date(2026, 10, 20) },
 };
 
 export type UpcomingDay = {
@@ -16,12 +17,54 @@ export type UpcomingDay = {
   tone: Tone;
   /** When several days are coming up, this one is the large card. */
   pinned?: boolean;
+  repeatsYearly?: boolean;
+  alarm?: DdayAlarm;
+};
+
+export type DdayAlarm =
+  | "none"
+  | "same-day-9"
+  | "day-before-9"
+  | "week-before-9";
+
+export const ddayAlarmLabel: Record<DdayAlarm, string> = {
+  none: "없음",
+  "same-day-9": "당일 오전 9시",
+  "day-before-9": "하루 전 오전 9시",
+  "week-before-9": "일주일 전 오전 9시",
 };
 
 export const upcomingDays: UpcomingDay[] = [
-  { id: 'd1', title: couple.anniversary.label, date: couple.anniversary.date, tone: 'accent' },
-  { id: 'd2', title: '크리스마스', date: new Date(2026, 11, 25), tone: 'accent', pinned: true },
-  { id: 'd3', title: '새해 첫날', date: new Date(2027, 0, 1), tone: 'blue' },
+  {
+    id: "d1",
+    title: couple.anniversary.label,
+    date: couple.anniversary.date,
+    tone: "accent",
+  },
+  {
+    id: "d2",
+    title: "크리스마스",
+    date: new Date(2026, 11, 25),
+    tone: "blue",
+  },
+  { id: "d3", title: "새해 첫날", date: new Date(2027, 0, 1), tone: "green" },
+  { id: "d4", title: "1,300일", date: new Date(2027, 0, 9), tone: "accent" },
+  {
+    id: "d5",
+    title: "발렌타인데이",
+    date: new Date(2027, 1, 14),
+    tone: "green",
+  },
+  { id: "d6", title: "화이트데이", date: new Date(2027, 2, 14), tone: "blue" },
+  { id: "p1", title: "우리가 만난 날", date: couple.startDate, tone: "accent" },
+  {
+    id: "p2",
+    title: "첫 크리스마스",
+    date: new Date(2023, 11, 25),
+    tone: "green",
+  },
+  { id: "p3", title: "1주년", date: new Date(2024, 5, 21), tone: "blue" },
+  { id: "p4", title: "1,000일", date: new Date(2026, 2, 17), tone: "accent" },
 ];
 
 export type TodoItem = {
@@ -32,9 +75,14 @@ export type TodoItem = {
 };
 
 export const initialTodos: TodoItem[] = [
-  { id: '1', title: '함께 장보기', assignee: '함께', done: false },
-  { id: '2', title: '기념일 저녁 식사 예약하기', assignee: '진국', done: false },
-  { id: '3', title: '우리 집 식물에 물 주기', assignee: '지현', done: true },
+  { id: "1", title: "함께 장보기", assignee: "함께", done: false },
+  {
+    id: "2",
+    title: "기념일 저녁 식사 예약하기",
+    assignee: "진국",
+    done: false,
+  },
+  { id: "3", title: "우리 집 식물에 물 주기", assignee: "지현", done: true },
 ];
 
 export type CalendarEvent = {
@@ -55,38 +103,48 @@ export type CalendarDay = {
 };
 
 export const calendarDays: Record<string, CalendarDay> = {
-  '2026-11-01': { photo: COVER_PHOTO_URI },
-  '2026-11-04': { events: [{ id: 'e1', title: '장보기', tone: 'green', time: '18:30' }] },
-  '2026-11-06': {
+  "2026-11-01": { photo: COVER_PHOTO_URI },
+  "2026-11-04": {
+    events: [{ id: "e1", title: "장보기", tone: "green", time: "18:30" }],
+  },
+  "2026-11-06": {
     events: [
       {
-        id: 'e2',
-        title: '점심 같이 먹기',
-        tone: 'green',
-        time: '12:30',
-        endTime: '13:30',
-        memo: '회사 앞 파스타집',
+        id: "e2",
+        title: "점심 같이 먹기",
+        tone: "green",
+        time: "12:30",
+        endTime: "13:30",
+        memo: "회사 앞 파스타집",
       },
-      { id: 'e3', title: '퇴근 후 산책', tone: 'blue', time: '20:00', endTime: '21:00' },
+      {
+        id: "e3",
+        title: "퇴근 후 산책",
+        tone: "blue",
+        time: "20:00",
+        endTime: "21:00",
+      },
     ],
   },
-  '2026-11-07': {
+  "2026-11-07": {
     events: [
-      { id: 'e4', title: '영화 데이트', tone: 'accent', time: '15:00' },
-      { id: 'e5', title: '빨래', tone: 'blue' },
+      { id: "e4", title: "영화 데이트", tone: "accent", time: "15:00" },
+      { id: "e5", title: "빨래", tone: "blue" },
     ],
     photo: COVER_PHOTO_URI,
   },
-  '2026-11-12': { events: [{ id: 'e6', title: '진국 회식', tone: 'blue', time: '19:00' }] },
-  '2026-11-14': {
+  "2026-11-12": {
+    events: [{ id: "e6", title: "진국 회식", tone: "blue", time: "19:00" }],
+  },
+  "2026-11-14": {
     events: [
-      { id: 'e7', title: '캠핑', tone: 'green', time: '10:00' },
-      { id: 'e8', title: '바베큐', tone: 'accent', time: '18:00' },
-      { id: 'e9', title: '사진 정리', tone: 'blue' },
+      { id: "e7", title: "캠핑", tone: "green", time: "10:00" },
+      { id: "e8", title: "바베큐", tone: "accent", time: "18:00" },
+      { id: "e9", title: "사진 정리", tone: "blue" },
     ],
     photo: COVER_PHOTO_URI,
   },
-  '2026-11-20': { events: [{ id: 'e10', title: '기념일', tone: 'accent' }] },
-  '2026-11-22': { photo: COVER_PHOTO_URI },
-  '2026-11-27': { events: [{ id: 'e11', title: '지현 생일', tone: 'accent' }] },
+  "2026-11-20": { events: [{ id: "e10", title: "기념일", tone: "accent" }] },
+  "2026-11-22": { photo: COVER_PHOTO_URI },
+  "2026-11-27": { events: [{ id: "e11", title: "지현 생일", tone: "accent" }] },
 };

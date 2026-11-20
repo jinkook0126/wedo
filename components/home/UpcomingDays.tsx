@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { DdayEditSheet } from '@/components/dday/DdayEditSheet';
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { UpcomingDay } from '@/constants/sample-data';
 import { palette, radius, shadow, toneColors, typography } from '@/constants/theme';
-import { daysBetween, formatMonthDay } from '@/lib/date';
+import { daysBetween, formatMonthDay, nextOccurrence } from '@/lib/date';
 
 type Props = {
   days: UpcomingDay[];
@@ -20,9 +22,16 @@ function formatCountdown(daysLeft: number) {
 
 function upcomingFrom(days: UpcomingDay[], today: Date): Day[] {
   return days
-    .map((day) => ({ ...day, daysLeft: daysBetween(today, day.date) }))
-    .filter((day) => day.daysLeft >= 0)
+    .map((day) => {
+      const date = day.repeatsYearly ? nextOccurrence(day.date, today) : day.date;
+      return { ...day, date, daysLeft: daysBetween(today, date) };
+    })
+    .filter((day) => day.repeatsYearly || day.daysLeft >= 0)
     .sort((a, b) => a.daysLeft - b.daysLeft);
+}
+
+function openDdays() {
+  router.push('/dday');
 }
 
 function openCalendar() {
@@ -30,17 +39,22 @@ function openCalendar() {
 }
 
 export function UpcomingDays({ days, today = new Date() }: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const upcoming = upcomingFrom(days, today);
   const pinned = upcoming.find((day) => day.pinned);
   const featured = upcoming.length >= 3 ? (pinned ?? upcoming[0]) : undefined;
-  const rest = featured ? upcoming.filter((day) => day.id !== featured.id) : upcoming;
+  const below = featured
+    ? upcoming.filter((day) => day.id !== featured.id).slice(0, 2)
+    : [];
+  const editing = days.find((day) => day.id === editingId) ?? null;
+  const open = (day: Day) => setEditingId(day.id);
 
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
-        <Text style={typography.heading}>다가오는 날</Text>
+        <Text style={styles.sectionTitle}>다가오는 날</Text>
         <Pressable
-          onPress={openCalendar}
+          onPress={openDdays}
           accessibilityRole="button"
           accessibilityLabel="다가오는 날 전체 보기"
           hitSlop={8}
@@ -51,84 +65,99 @@ export function UpcomingDays({ days, today = new Date() }: Props) {
       </View>
 
       {upcoming.length === 0 && <EmptyState />}
-      {upcoming.length === 1 && <HeroCard day={upcoming[0]} />}
+      {upcoming.length === 1 && <HeroCard day={upcoming[0]} onPress={() => open(upcoming[0])} />}
       {upcoming.length === 2 && (
-        <View style={styles.pairRow}>
-          {upcoming.map((day) => (
-            <PairCard key={day.id} day={day} />
-          ))}
-        </View>
+        <>
+          <HeroCard
+            day={upcoming[0]}
+            kicker={upcoming[0].pinned ? undefined : '가장 가까운 날'}
+            onPress={() => open(upcoming[0])}
+          />
+          <ListCard day={upcoming[1]} onPress={() => open(upcoming[1])} />
+        </>
       )}
       {featured && (
         <>
-          <HeroCard day={featured} />
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.miniScroll}
-            contentContainerStyle={styles.miniRow}>
-            {rest.map((day) => (
-              <MiniCard key={day.id} day={day} />
+          <HeroCard day={featured} onPress={() => open(featured)} />
+          <View style={styles.miniRow}>
+            {below.map((day) => (
+              <MiniCard key={day.id} day={day} onPress={() => open(day)} />
             ))}
-          </ScrollView>
+          </View>
         </>
       )}
+      <DdayEditSheet day={editing} onClose={() => setEditingId(null)} />
     </View>
   );
 }
 
-function HeroCard({ day }: { day: Day }) {
+function HeroCard({ day, kicker, onPress }: { day: Day; kicker?: string; onPress: () => void }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View
-      style={[styles.hero, { backgroundColor: bg }]}
-      accessible
-      accessibilityLabel={cardLabel(day)}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel(day)}
+      style={({ pressed }) => [styles.hero, { backgroundColor: bg }, pressed && styles.pressed]}>
       <View style={styles.heroText}>
-        {day.pinned && <AppIcon name="pin" color={fg} size={14} />}
+        {kicker ? (
+          <Text style={[styles.kicker, { color: fg }]}>{kicker}</Text>
+        ) : (
+          day.pinned && <AppIcon name="pin" color={fg} size={14} />
+        )}
         <Text style={styles.heroTitle} numberOfLines={1}>
           {day.title}
         </Text>
         <Text style={styles.date}>{formatMonthDay(day.date)}</Text>
       </View>
       <Text style={[styles.heroCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
-    </View>
+    </Pressable>
   );
 }
 
-function PairCard({ day }: { day: Day }) {
+function ListCard({ day, onPress }: { day: Day; onPress: () => void }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View
-      style={[styles.pairCard, { backgroundColor: bg }]}
-      accessible
-      accessibilityLabel={cardLabel(day)}>
-      {day.pinned && <AppIcon name="pin" color={fg} size={14} />}
-      <Text style={styles.pairTitle} numberOfLines={1}>
-        {day.title}
-      </Text>
-      <Text style={styles.date}>{formatMonthDay(day.date)}</Text>
-      <Text style={[styles.pairCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
-    </View>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel(day)}
+      style={({ pressed }) => [styles.listCard, pressed && styles.pressed]}>
+      <View style={styles.listText}>
+        <View style={styles.listTitle}>
+          {day.pinned && <AppIcon name="pin" color={fg} size={12} />}
+          <Text style={styles.listLabel} numberOfLines={1}>
+            {day.title}
+          </Text>
+        </View>
+        <Text style={styles.date}>{formatMonthDay(day.date)}</Text>
+      </View>
+      <View style={[styles.listBadge, { backgroundColor: bg }]}>
+        <Text style={[styles.listBadgeLabel, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
+      </View>
+    </Pressable>
   );
 }
 
-function MiniCard({ day }: { day: Day }) {
+function MiniCard({ day, onPress }: { day: Day; onPress: () => void }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View style={[styles.mini, { backgroundColor: bg }]} accessible accessibilityLabel={cardLabel(day)}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel(day)}
+      style={({ pressed }) => [styles.mini, { backgroundColor: bg }, pressed && styles.pressed]}>
       <View style={styles.miniTitle}>
-        {day.pinned ? (
-          <AppIcon name="pin" color={fg} size={12} />
-        ) : (
-          <View style={[styles.dot, { backgroundColor: fg }]} />
-        )}
-        <Text style={typography.body} numberOfLines={1}>
+        {day.pinned && <AppIcon name="pin" color={fg} size={12} />}
+        <Text style={styles.miniLabel} numberOfLines={1}>
           {day.title}
         </Text>
       </View>
-      <Text style={[styles.miniCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
-    </View>
+      <View style={styles.miniFooter}>
+        <Text style={[styles.miniCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
+        <Text style={styles.miniDate}>{formatMonthDay(day.date)}</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -161,6 +190,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+    letterSpacing: -0.3,
+    color: palette.ink,
+  },
   seeAll: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -186,51 +222,76 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  kicker: {
+    ...typography.caption,
+    fontWeight: '700',
+  },
   heroTitle: {
-    ...typography.heading,
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 20,
+    letterSpacing: -0.3,
+    color: palette.ink,
   },
   heroCount: {
-    fontSize: 28,
-    fontWeight: '800',
-    lineHeight: 34,
-    letterSpacing: -0.6,
+    fontSize: 32,
+    fontWeight: '700',
+    lineHeight: 39,
+    letterSpacing: -0.64,
   },
   date: {
-    ...typography.caption,
+    fontSize: 11,
+    fontWeight: '400',
+    lineHeight: 15,
+    letterSpacing: -0.22,
     color: palette.muted,
   },
-  pairRow: {
+  listCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: palette.line,
+    backgroundColor: palette.surface,
+  },
+  listText: {
+    flex: 1,
+    gap: 2,
+  },
+  listTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  listLabel: {
+    flexShrink: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 16,
+    letterSpacing: -0.24,
+    color: palette.ink,
+  },
+  listBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  listBadgeLabel: {
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 24,
+    letterSpacing: -0.4,
+  },
+  miniRow: {
     flexDirection: 'row',
     gap: 10,
   },
-  pairCard: {
-    flex: 1,
-    gap: 4,
-    minHeight: 112,
-    padding: 14,
-    borderRadius: radius.lg,
-  },
-  pairTitle: {
-    ...typography.body,
-    fontWeight: '700',
-  },
-  pairCount: {
-    marginTop: 'auto',
-    fontSize: 22,
-    fontWeight: '800',
-    lineHeight: 28,
-    letterSpacing: -0.4,
-  },
-  miniScroll: {
-    flexGrow: 0,
-  },
-  miniRow: {
-    gap: 8,
-  },
   mini: {
-    width: 132,
+    flex: 1,
     gap: 6,
     paddingVertical: 12,
     paddingHorizontal: 12,
@@ -241,16 +302,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: radius.pill,
+  miniLabel: {
+    flexShrink: 1,
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 16,
+    letterSpacing: -0.24,
+    color: palette.ink,
+  },
+  miniFooter: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 8,
   },
   miniCount: {
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 22,
-    letterSpacing: -0.3,
+    fontSize: 20,
+    fontWeight: '700',
+    lineHeight: 24,
+    letterSpacing: -0.4,
+  },
+  miniDate: {
+    flexShrink: 1,
+    fontSize: 11,
+    fontWeight: '400',
+    lineHeight: 15,
+    letterSpacing: -0.22,
+    color: palette.muted,
+    textAlign: 'right',
   },
   empty: {
     alignItems: 'center',

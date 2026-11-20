@@ -16,6 +16,18 @@ export function formatMonthDay(date: Date) {
   return `${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
+/** "2026년 12월 25일 (금)" */
+export function formatFullDate(date: Date) {
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${WEEKDAYS[date.getDay()]})`;
+}
+
+/** This year's month and day, or next year's if that day has already passed. */
+export function nextOccurrence(date: Date, today: Date) {
+  const thisYear = new Date(today.getFullYear(), date.getMonth(), date.getDate());
+  if (daysBetween(today, thisYear) >= 0) return thisYear;
+  return new Date(today.getFullYear() + 1, date.getMonth(), date.getDate());
+}
+
 export function fromDateKey(key: string) {
   const [y, m, d] = key.split('-').map(Number);
   return new Date(y, m - 1, d);
