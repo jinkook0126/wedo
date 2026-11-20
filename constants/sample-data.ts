@@ -17,6 +17,21 @@ export type UpcomingDay = {
   tone: Tone;
   /** When several days are coming up, this one is the large card. */
   pinned?: boolean;
+  repeatsYearly?: boolean;
+  alarm?: DdayAlarm;
+};
+
+export type DdayAlarm =
+  | "none"
+  | "same-day-9"
+  | "day-before-9"
+  | "week-before-9";
+
+export const ddayAlarmLabel: Record<DdayAlarm, string> = {
+  none: "없음",
+  "same-day-9": "당일 오전 9시",
+  "day-before-9": "하루 전 오전 9시",
+  "week-before-9": "일주일 전 오전 9시",
 };
 
 export const upcomingDays: UpcomingDay[] = [
@@ -33,6 +48,23 @@ export const upcomingDays: UpcomingDay[] = [
     tone: "blue",
   },
   { id: "d3", title: "새해 첫날", date: new Date(2027, 0, 1), tone: "green" },
+  { id: "d4", title: "1,300일", date: new Date(2027, 0, 9), tone: "accent" },
+  {
+    id: "d5",
+    title: "발렌타인데이",
+    date: new Date(2027, 1, 14),
+    tone: "green",
+  },
+  { id: "d6", title: "화이트데이", date: new Date(2027, 2, 14), tone: "blue" },
+  { id: "p1", title: "우리가 만난 날", date: couple.startDate, tone: "accent" },
+  {
+    id: "p2",
+    title: "첫 크리스마스",
+    date: new Date(2023, 11, 25),
+    tone: "green",
+  },
+  { id: "p3", title: "1주년", date: new Date(2024, 5, 21), tone: "blue" },
+  { id: "p4", title: "1,000일", date: new Date(2026, 2, 17), tone: "accent" },
 ];
 
 export type TodoItem = {

@@ -4,8 +4,12 @@ import { StyleSheet } from 'react-native';
 import { AppIcon, type AppIconName } from '@/components/ui/AppIcon';
 import { palette } from '@/constants/theme';
 
+export const unstable_settings = {
+  initialRouteName: '(home)',
+};
+
 const TABS: { name: string; label: string; icon: AppIconName }[] = [
-  { name: 'index', label: '홈', icon: 'home' },
+  { name: '(home)', label: '홈', icon: 'home' },
   { name: 'calendar', label: '캘린더', icon: 'calendar' },
   { name: 'memo', label: '메모', icon: 'photo' },
   { name: 'story', label: '스토리', icon: 'heart' },

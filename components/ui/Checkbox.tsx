@@ -6,12 +6,19 @@ import { palette, radius, toneColors, type Tone } from '@/constants/theme';
 type Props = {
   checked: boolean;
   tone?: Tone;
+  round?: boolean;
+  checkedColor?: string;
 };
 
-export function Checkbox({ checked, tone = 'accent' }: Props) {
-  const fill = toneColors[tone].fg;
+export function Checkbox({ checked, tone = 'accent', round = false, checkedColor }: Props) {
+  const fill = checkedColor ?? toneColors[tone].fg;
   return (
-    <View style={[styles.box, checked && { backgroundColor: fill, borderColor: fill }]}>
+    <View
+      style={[
+        styles.box,
+        round && styles.round,
+        checked && { backgroundColor: fill, borderColor: fill },
+      ]}>
       {checked && <AppIcon name="check" color="#FFFFFF" size={14} />}
     </View>
   );
@@ -27,5 +34,8 @@ const styles = StyleSheet.create({
     backgroundColor: palette.surface,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  round: {
+    borderRadius: radius.pill,
   },
 });

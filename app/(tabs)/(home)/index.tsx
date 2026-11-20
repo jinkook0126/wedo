@@ -4,12 +4,15 @@ import { CoupleSummary } from '@/components/home/CoupleSummary';
 import { CoverPhoto } from '@/components/home/CoverPhoto';
 import { TodoChecklist } from '@/components/home/TodoChecklist';
 import { UpcomingDays } from '@/components/home/UpcomingDays';
-import { COVER_PHOTO_URI, couple, initialTodos, upcomingDays } from '@/constants/sample-data';
+import { useDays } from '@/components/home/DaysProvider';
+import { COVER_PHOTO_URI, couple, initialTodos } from '@/constants/sample-data';
 import { palette, spacing } from '@/constants/theme';
 
 const SHEET_RADIUS = 28;
 
 export default function HomeScreen() {
+  const { days } = useDays();
+
   return (
     <View style={styles.safe}>
       <ScrollView
@@ -19,7 +22,7 @@ export default function HomeScreen() {
         <CoverPhoto uri={COVER_PHOTO_URI} />
         <View style={styles.sheet}>
           <CoupleSummary names={couple.names} startDate={couple.startDate} />
-          <UpcomingDays days={upcomingDays} />
+          <UpcomingDays days={days} />
           <TodoChecklist initialItems={initialTodos} />
         </View>
       </ScrollView>

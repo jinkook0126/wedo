@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { DdayEditSheet } from '@/components/dday/DdayEditSheet';
 import { AppIcon } from '@/components/ui/AppIcon';
 import type { UpcomingDay } from '@/constants/sample-data';
 import { palette, radius, shadow, toneColors, typography } from '@/constants/theme';
-import { daysBetween, formatMonthDay } from '@/lib/date';
+import { daysBetween, formatMonthDay, nextOccurrence } from '@/lib/date';
 
 type Props = {
   days: UpcomingDay[];
@@ -20,9 +22,16 @@ function formatCountdown(daysLeft: number) {
 
 function upcomingFrom(days: UpcomingDay[], today: Date): Day[] {
   return days
-    .map((day) => ({ ...day, daysLeft: daysBetween(today, day.date) }))
-    .filter((day) => day.daysLeft >= 0)
+    .map((day) => {
+      const date = day.repeatsYearly ? nextOccurrence(day.date, today) : day.date;
+      return { ...day, date, daysLeft: daysBetween(today, date) };
+    })
+    .filter((day) => day.repeatsYearly || day.daysLeft >= 0)
     .sort((a, b) => a.daysLeft - b.daysLeft);
+}
+
+function openDdays() {
+  router.push('/dday');
 }
 
 function openCalendar() {
@@ -30,19 +39,22 @@ function openCalendar() {
 }
 
 export function UpcomingDays({ days, today = new Date() }: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const upcoming = upcomingFrom(days, today);
   const pinned = upcoming.find((day) => day.pinned);
   const featured = upcoming.length >= 3 ? (pinned ?? upcoming[0]) : undefined;
   const below = featured
     ? upcoming.filter((day) => day.id !== featured.id).slice(0, 2)
     : [];
+  const editing = days.find((day) => day.id === editingId) ?? null;
+  const open = (day: Day) => setEditingId(day.id);
 
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
         <Text style={styles.sectionTitle}>다가오는 날</Text>
         <Pressable
-          onPress={openCalendar}
+          onPress={openDdays}
           accessibilityRole="button"
           accessibilityLabel="다가오는 날 전체 보기"
           hitSlop={8}
@@ -53,34 +65,40 @@ export function UpcomingDays({ days, today = new Date() }: Props) {
       </View>
 
       {upcoming.length === 0 && <EmptyState />}
-      {upcoming.length === 1 && <HeroCard day={upcoming[0]} />}
+      {upcoming.length === 1 && <HeroCard day={upcoming[0]} onPress={() => open(upcoming[0])} />}
       {upcoming.length === 2 && (
         <>
-          <HeroCard day={upcoming[0]} kicker={upcoming[0].pinned ? undefined : '가장 가까운 날'} />
-          <ListCard day={upcoming[1]} />
+          <HeroCard
+            day={upcoming[0]}
+            kicker={upcoming[0].pinned ? undefined : '가장 가까운 날'}
+            onPress={() => open(upcoming[0])}
+          />
+          <ListCard day={upcoming[1]} onPress={() => open(upcoming[1])} />
         </>
       )}
       {featured && (
         <>
-          <HeroCard day={featured} />
+          <HeroCard day={featured} onPress={() => open(featured)} />
           <View style={styles.miniRow}>
             {below.map((day) => (
-              <MiniCard key={day.id} day={day} />
+              <MiniCard key={day.id} day={day} onPress={() => open(day)} />
             ))}
           </View>
         </>
       )}
+      <DdayEditSheet day={editing} onClose={() => setEditingId(null)} />
     </View>
   );
 }
 
-function HeroCard({ day, kicker }: { day: Day; kicker?: string }) {
+function HeroCard({ day, kicker, onPress }: { day: Day; kicker?: string; onPress: () => void }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View
-      style={[styles.hero, { backgroundColor: bg }]}
-      accessible
-      accessibilityLabel={cardLabel(day)}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel(day)}
+      style={({ pressed }) => [styles.hero, { backgroundColor: bg }, pressed && styles.pressed]}>
       <View style={styles.heroText}>
         {kicker ? (
           <Text style={[styles.kicker, { color: fg }]}>{kicker}</Text>
@@ -93,14 +111,18 @@ function HeroCard({ day, kicker }: { day: Day; kicker?: string }) {
         <Text style={styles.date}>{formatMonthDay(day.date)}</Text>
       </View>
       <Text style={[styles.heroCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
-    </View>
+    </Pressable>
   );
 }
 
-function ListCard({ day }: { day: Day }) {
+function ListCard({ day, onPress }: { day: Day; onPress: () => void }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View style={styles.listCard} accessible accessibilityLabel={cardLabel(day)}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel(day)}
+      style={({ pressed }) => [styles.listCard, pressed && styles.pressed]}>
       <View style={styles.listText}>
         <View style={styles.listTitle}>
           {day.pinned && <AppIcon name="pin" color={fg} size={12} />}
@@ -113,14 +135,18 @@ function ListCard({ day }: { day: Day }) {
       <View style={[styles.listBadge, { backgroundColor: bg }]}>
         <Text style={[styles.listBadgeLabel, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
-function MiniCard({ day }: { day: Day }) {
+function MiniCard({ day, onPress }: { day: Day; onPress: () => void }) {
   const { fg, bg } = toneColors[day.tone];
   return (
-    <View style={[styles.mini, { backgroundColor: bg }]} accessible accessibilityLabel={cardLabel(day)}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel(day)}
+      style={({ pressed }) => [styles.mini, { backgroundColor: bg }, pressed && styles.pressed]}>
       <View style={styles.miniTitle}>
         {day.pinned && <AppIcon name="pin" color={fg} size={12} />}
         <Text style={styles.miniLabel} numberOfLines={1}>
@@ -131,7 +157,7 @@ function MiniCard({ day }: { day: Day }) {
         <Text style={[styles.miniCount, { color: fg }]}>{formatCountdown(day.daysLeft)}</Text>
         <Text style={styles.miniDate}>{formatMonthDay(day.date)}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
