@@ -12,10 +12,9 @@ import {
   type NewMemo,
   type NewTodo,
 } from '@/components/memo/MemoSheets';
+import { MemoTabs } from '@/components/memo/MemoTabs';
 import { SharedTodos } from '@/components/memo/SharedTodos';
 import { FAB_SIZE, FloatingAddButton } from '@/components/ui/FloatingAddButton';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
-import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import {
   initialBucketItems,
   initialSharedTodos,
@@ -74,8 +73,7 @@ export default function MemoScreen() {
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader eyebrow="둘이 함께 채우는 기록" title="메모" />
-        <SegmentedTabs options={TABS} value={tab} onChange={setTab} />
+        <MemoTabs options={TABS} value={tab} onChange={setTab} />
         {tab === 'bucket' && (
           <BucketList
             items={bucketItems}
@@ -103,7 +101,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.bg,
   },
   content: {
-    paddingTop: 12,
+    paddingTop: 8,
     paddingHorizontal: spacing.screen,
     paddingBottom: FAB_SIZE + spacing.screen * 2,
     gap: spacing.section,

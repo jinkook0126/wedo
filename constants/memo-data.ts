@@ -21,6 +21,7 @@ export type Memo = {
   title: string;
   body: string;
   date: string;
+  author?: string;
   favorite?: boolean;
 };
 
@@ -29,13 +30,15 @@ export const memos: Memo[] = [
     id: 'm1',
     title: '다음 데이트는 여기',
     body: '비 오는 날엔 조용한 책방에 가자. 따뜻한 차도 한 잔 마시고.',
-    date: '오늘 오후 2시',
+    author: '지현',
+    date: '오늘',
     favorite: true,
   },
   {
     id: 'm2',
     title: '너의 취향 기록',
     body: '덜 단 라테, 창가 자리, 그리고 산책. 하나씩 알아가는 중.',
+    author: '진국',
     date: '어제',
     favorite: true,
   },
@@ -43,12 +46,14 @@ export const memos: Memo[] = [
     id: 'm3',
     title: '제주 여행 준비',
     body: '숙소 예약하기, 바다 앞 카페 찾기, 필름 카메라 챙기기.',
+    author: '지현',
     date: '11월 2일',
   },
   {
     id: 'm4',
     title: '우리의 작은 약속',
     body: '바쁜 날에도 하루에 한 번은 서로의 안부를 묻기.',
+    author: '진국',
     date: '10월 30일',
   },
 ];
@@ -62,9 +67,9 @@ export type SharedTodo = {
 };
 
 export const initialSharedTodos: SharedTodo[] = [
-  { id: 't1', title: '주말 장보기', assignee: '함께', shared: true, done: false },
-  { id: 't2', title: '기념일 식당 예약하기', assignee: '함께', shared: true, done: false },
+  { id: 't1', title: '함께 장보기', assignee: '함께', shared: true, done: false },
+  { id: 't2', title: '기념일 저녁 식사 예약하기', assignee: '진국', shared: false, done: false },
   { id: 't3', title: '우리 집 식물에 물 주기', assignee: '함께', shared: true, done: true },
-  { id: 't4', title: '퇴근길에 우유 사 오기', assignee: '진국', shared: false, done: false },
+  { id: 't4', title: '퇴근길에 우유 사 오기', assignee: '지현', shared: false, done: false },
   { id: 't5', title: '여행 사진 정리하기', assignee: '지현', shared: false, done: false },
 ];

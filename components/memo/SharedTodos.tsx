@@ -1,10 +1,17 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { TabIntro } from '@/components/memo/TabIntro';
+import { EmptyList } from '@/components/memo/EmptyList';
+import { AppIcon } from '@/components/ui/AppIcon';
 import { Checkbox } from '@/components/ui/Checkbox';
-import type { SharedTodo } from '@/constants/memo-data';
-import { palette, radius, shadow, typography } from '@/constants/theme';
-import { formatKoreanDate } from '@/lib/date';
+import { MEMBERS, type SharedTodo } from '@/constants/memo-data';
+import { palette, radius, shadow, toneColors } from '@/constants/theme';
+
+const FILTERS = ['전체', '함께', ...MEMBERS] as const;
+
+const assigneeColors: Record<string, { fg: string; bg: string }> = {
+  지현: toneColors.green,
+  진국: toneColors.blue,
+};
 
 type Props = {
   items: SharedTodo[];
@@ -12,59 +19,109 @@ type Props = {
 };
 
 export function SharedTodos({ items, onToggle }: Props) {
-  const doneCount = items.filter((item) => item.done).length;
+  const openItems = items.filter((item) => !item.done);
+  const doneItems = items.filter((item) => item.done);
 
-  const groups = [
-    { title: '함께할 일', items: items.filter((item) => item.shared) },
-    { title: '서로할 일', items: items.filter((item) => !item.shared) },
-  ];
+  if (items.length === 0) {
+    return (
+      <EmptyList
+        title="함께 챙길 일이 아직 없어요"
+        subtitle="함께 챙길 일이 생기면 여기에 모아 둘게요"
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <TabIntro
-        title="오늘도 함께, 하나씩"
-        subtitle={`${formatKoreanDate(new Date())} · ${items.length}개 중 ${doneCount}개 완료`}
-      />
+      <View style={styles.filters}>
+        {FILTERS.map((filter) => {
+          const selected = filter === '전체';
+          return (
+            <View key={filter} style={[styles.chip, selected && styles.chipSelected]}>
+              <Text style={[styles.chipLabel, selected && styles.chipLabelSelected]}>{filter}</Text>
+            </View>
+          );
+        })}
+      </View>
 
-      {groups.map((group) => (
-        <View key={group.title} style={styles.group}>
-          <Text style={styles.groupTitle}>{group.title}</Text>
-          <View style={styles.card}>
-            {group.items.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => onToggle(item.id)}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: item.done }}
-                accessibilityLabel={item.title}
-                style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
-                <Checkbox checked={item.done} />
-                <View style={styles.details}>
-                  <Text style={[typography.body, item.done && styles.doneTitle]}>{item.title}</Text>
-                  <Text style={styles.assignee}>{item.done ? '완료' : item.assignee}</Text>
-                </View>
-              </Pressable>
-            ))}
+      <View style={styles.card}>
+        {openItems.map((item, index) => (
+          <TodoRow key={item.id} item={item} divider={index > 0} onToggle={onToggle} />
+        ))}
+
+        {doneItems.length > 0 && (
+          <View style={[styles.doneRow, openItems.length > 0 && styles.divider]}>
+            <Text style={styles.doneLabel}>완료 {doneItems.length}개</Text>
+            <AppIcon name="chevronRight" color={palette.muted} size={16} />
           </View>
-        </View>
-      ))}
+        )}
+      </View>
     </View>
+  );
+}
+
+function TodoRow({
+  item,
+  divider,
+  onToggle,
+}: {
+  item: SharedTodo;
+  divider: boolean;
+  onToggle: (id: string) => void;
+}) {
+  const together = item.assignee === '함께';
+  const person = assigneeColors[item.assignee] ?? toneColors.blue;
+
+  return (
+    <Pressable
+      onPress={() => onToggle(item.id)}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: item.done }}
+      accessibilityLabel={`${item.title}, ${item.assignee}`}
+      style={({ pressed }) => [styles.row, divider && styles.divider, pressed && styles.pressed]}>
+      <Checkbox checked={false} round />
+      <Text style={styles.title}>{item.title}</Text>
+      <View style={[styles.pill, { backgroundColor: together ? palette.soft : person.bg }]}>
+        <Text style={[styles.pillLabel, { color: together ? palette.accent : person.fg }]}>
+          {item.assignee}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    gap: 20,
+    gap: 14,
   },
-  group: {
-    gap: 12,
+  filters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
-  groupTitle: {
-    ...typography.body,
-    fontWeight: '800',
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    backgroundColor: palette.surface,
+    boxShadow: shadow.card,
+  },
+  chipSelected: {
+    backgroundColor: palette.ink,
+    boxShadow: 'none',
+  },
+  chipLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+    letterSpacing: -0.2,
+    color: palette.ink,
+  },
+  chipLabelSelected: {
+    color: '#FFFFFF',
   },
   card: {
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 16,
     borderRadius: radius.lg,
     backgroundColor: palette.surface,
@@ -73,22 +130,46 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
     paddingVertical: 14,
+  },
+  divider: {
+    borderTopWidth: 1,
+    borderTopColor: palette.line,
   },
   pressed: {
     opacity: 0.6,
   },
-  details: {
+  title: {
     flex: 1,
-    gap: 5,
+    fontSize: 15,
+    fontWeight: '600',
+    lineHeight: 21,
+    letterSpacing: -0.2,
+    color: palette.ink,
   },
-  doneTitle: {
+  pill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  pillLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    lineHeight: 14,
+    letterSpacing: -0.1,
+  },
+  doneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+  },
+  doneLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+    letterSpacing: -0.2,
     color: palette.muted,
-    textDecorationLine: 'line-through',
-  },
-  assignee: {
-    ...typography.micro,
-    color: palette.accent,
   },
 });

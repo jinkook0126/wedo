@@ -110,7 +110,7 @@ function MemoForm({ onClose, onSave }: FormProps<NewMemo>) {
       <View style={styles.switchRow}>
         <View style={styles.switchText}>
           <Text style={typography.body}>즐겨찾기</Text>
-          <Text style={styles.switchHint}>하트와 함께 강조해서 보여줘요</Text>
+          <Text style={styles.switchHint}>핀과 함께 강조해서 보여줘요</Text>
         </View>
         <Switch
           value={favorite}
